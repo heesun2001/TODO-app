@@ -1,0 +1,397 @@
+/* ── Reset & Base ─────────────────────────────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --bg-page:        #1a1a2e;
+  --bg-card:        #16213e;
+  --bg-input:       #0f3460;
+  --bg-item:        #1e2a45;
+  --bg-item-hover:  #243252;
+  --bg-item-drag:   #2a3d60;
+  --accent:         #e94560;
+  --accent-hover:   #ff6b85;
+  --text-primary:   #e0e0e0;
+  --text-secondary: #8892a4;
+  --text-done:      #555f70;
+  --border:         #2a3a5a;
+  --border-focus:   #e94560;
+  --check-done:     #e94560;
+  --shadow:         0 8px 32px rgba(0, 0, 0, 0.4);
+  --radius:         12px;
+  --radius-sm:      8px;
+  --transition:     0.2s ease;
+  font-size: 16px;
+}
+
+body {
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  background: var(--bg-page);
+  color: var(--text-primary);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 2rem 1rem 4rem;
+  line-height: 1.5;
+}
+
+/* ── App Shell ────────────────────────────────────────────────────────────── */
+.app {
+  width: 100%;
+  max-width: 640px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.app-header {
+  text-align: center;
+  margin-bottom: 2.5rem;
+}
+
+.app-title {
+  font-size: clamp(2.5rem, 8vw, 4rem);
+  font-weight: 900;
+  letter-spacing: 0.5em;
+  background: linear-gradient(135deg, #e94560, #a855f7);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  user-select: none;
+}
+
+.app-main {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.app-footer {
+  text-align: center;
+  margin-top: 2rem;
+  color: var(--text-secondary);
+  font-size: 0.78rem;
+  letter-spacing: 0.03em;
+}
+
+/* ── Empty State ──────────────────────────────────────────────────────────── */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 3rem 2rem;
+  color: var(--text-secondary);
+  animation: fadeIn 0.3s ease;
+}
+
+.empty-icon {
+  font-size: 2.5rem;
+  opacity: 0.3;
+}
+
+/* ── TodoInput ────────────────────────────────────────────────────────────── */
+.todo-input-wrapper {
+  display: flex;
+  align-items: center;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0 1rem;
+  box-shadow: var(--shadow);
+  transition: border-color var(--transition);
+  margin-bottom: 1px;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.todo-input-wrapper:focus-within {
+  border-color: var(--border-focus);
+}
+
+.toggle-all-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.25rem;
+  color: var(--text-secondary);
+  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+  transition: color var(--transition), transform var(--transition);
+  flex-shrink: 0;
+}
+
+.toggle-all-btn:hover {
+  color: var(--accent);
+}
+
+.toggle-all-btn.all-done {
+  color: var(--accent);
+}
+
+.toggle-all-btn svg {
+  width: 20px;
+  height: 20px;
+  fill: currentColor;
+}
+
+.todo-input {
+  flex: 1;
+  background: none;
+  border: none;
+  outline: none;
+  font-size: 1.05rem;
+  color: var(--text-primary);
+  padding: 1.1rem 0.75rem;
+  caret-color: var(--accent);
+}
+
+.todo-input::placeholder {
+  color: var(--text-secondary);
+}
+
+/* ── TodoList ─────────────────────────────────────────────────────────────── */
+.todo-list {
+  list-style: none;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-top: none;
+  overflow: hidden;
+}
+
+.todo-list:empty {
+  display: none;
+}
+
+/* ── TodoItem ─────────────────────────────────────────────────────────────── */
+.todo-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0 1rem;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-item);
+  transition: background var(--transition), opacity var(--transition);
+  cursor: grab;
+  animation: slideIn 0.2s ease;
+}
+
+.todo-item:last-child {
+  border-bottom: none;
+}
+
+.todo-item:hover {
+  background: var(--bg-item-hover);
+}
+
+.todo-item.dragging {
+  opacity: 0.45;
+  background: var(--bg-item-drag);
+  cursor: grabbing;
+}
+
+.todo-item.drag-over {
+  border-top: 2px solid var(--accent);
+}
+
+/* Checkbox */
+.todo-checkbox {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 22px;
+  height: 22px;
+  border: 2px solid var(--border);
+  border-radius: 50%;
+  cursor: pointer;
+  flex-shrink: 0;
+  position: relative;
+  transition: border-color var(--transition), background var(--transition);
+}
+
+.todo-checkbox:hover {
+  border-color: var(--accent);
+}
+
+.todo-checkbox:checked {
+  background: var(--check-done);
+  border-color: var(--check-done);
+}
+
+.todo-checkbox:checked::after {
+  content: '';
+  position: absolute;
+  left: 5px;
+  top: 2px;
+  width: 6px;
+  height: 10px;
+  border: 2px solid #fff;
+  border-top: none;
+  border-left: none;
+  transform: rotate(45deg);
+}
+
+/* Text / Edit */
+.todo-text {
+  flex: 1;
+  font-size: 1rem;
+  padding: 1rem 0;
+  word-break: break-word;
+  transition: color var(--transition), text-decoration var(--transition);
+  cursor: text;
+  min-height: 54px;
+  display: flex;
+  align-items: center;
+}
+
+.todo-text.completed {
+  color: var(--text-done);
+  text-decoration: line-through;
+}
+
+.todo-edit-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid var(--accent);
+  outline: none;
+  font-size: 1rem;
+  color: var(--text-primary);
+  padding: 1rem 0;
+  caret-color: var(--accent);
+  width: 100%;
+}
+
+/* Delete button */
+.todo-delete-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-secondary);
+  font-size: 1.2rem;
+  padding: 0.25rem 0.35rem;
+  border-radius: var(--radius-sm);
+  opacity: 0;
+  transition: opacity var(--transition), color var(--transition);
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.todo-item:hover .todo-delete-btn,
+.todo-item:focus-within .todo-delete-btn {
+  opacity: 1;
+}
+
+.todo-delete-btn:hover {
+  color: var(--accent);
+}
+
+/* ── FilterBar ────────────────────────────────────────────────────────────── */
+.filter-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding: 0.65rem 1rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-top: none;
+  border-bottom-left-radius: var(--radius);
+  border-bottom-right-radius: var(--radius);
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  box-shadow: var(--shadow);
+}
+
+.filter-count {
+  min-width: 80px;
+}
+
+.filter-tabs {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.filter-tab {
+  background: none;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 0.3rem 0.65rem;
+  font-size: 0.82rem;
+  transition: color var(--transition), border-color var(--transition);
+}
+
+.filter-tab:hover {
+  color: var(--text-primary);
+}
+
+.filter-tab.active {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+.clear-btn {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 0.82rem;
+  padding: 0.3rem 0.5rem;
+  border-radius: var(--radius-sm);
+  transition: color var(--transition);
+  min-width: 80px;
+  text-align: right;
+}
+
+.clear-btn:hover {
+  color: var(--accent-hover);
+}
+
+.clear-btn:disabled {
+  opacity: 0.35;
+  cursor: default;
+  pointer-events: none;
+}
+
+/* ── Animations ───────────────────────────────────────────────────────────── */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* ── Responsive ───────────────────────────────────────────────────────────── */
+@media (max-width: 480px) {
+  body {
+    padding: 1rem 0.5rem 3rem;
+  }
+
+  .filter-bar {
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .filter-count,
+  .clear-btn {
+    text-align: center;
+    min-width: unset;
+  }
+}
