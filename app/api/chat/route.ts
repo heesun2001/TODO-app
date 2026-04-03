@@ -10,7 +10,7 @@ export async function POST(req: Request) {
     await req.json()
 
   const result = streamText({
-    model: anthropic('claude-sonnet-4.6'),
+    model: anthropic('claude-sonnet-4-6'),
     system: '당신은 친절하고 유능한 AI 어시스턴트입니다. 한국어로 질문하면 한국어로 답하세요.',
     messages: await convertToModelMessages(messages),
     onFinish: async ({ text }) => {
