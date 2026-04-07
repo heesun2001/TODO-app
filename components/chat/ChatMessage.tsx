@@ -17,6 +17,12 @@ export function ChatMessage({ message }: Props) {
     .map((p) => (p as { type: 'text'; text: string }).text)
     .join('')
 
+  const fileParts = message.parts.filter((p) => p.type === 'file') as {
+    type: 'file'
+    mediaType: string
+    url: string
+  }[]
+
   return (
     <div className={cn('flex w-full', isUser ? 'justify-end' : 'justify-start')}>
       <div
@@ -27,8 +33,22 @@ export function ChatMessage({ message }: Props) {
             : 'bg-muted text-foreground'
         )}
       >
+        {/* 첨부 이미지 렌더링 */}
+        {fileParts.length > 0 && (
+          <div className="mb-2 flex flex-wrap gap-2">
+            {fileParts.map((part, i) => (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                key={i}
+                src={part.url}
+                alt="첨부 이미지"
+                className="max-h-60 max-w-full rounded-lg object-contain"
+              />
+            ))}
+          </div>
+        )}
         {isUser ? (
-          <p className="whitespace-pre-wrap">{text}</p>
+          text ? <p className="whitespace-pre-wrap">{text}</p> : null
         ) : (
           <ReactMarkdown
             remarkPlugins={[remarkGfm]}

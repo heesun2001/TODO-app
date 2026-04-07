@@ -5,7 +5,7 @@ import { useChat, UIMessage } from '@ai-sdk/react'
 import { DefaultChatTransport } from 'ai'
 import { ChatSidebar } from './ChatSidebar'
 import { ChatWindow } from './ChatWindow'
-import { ChatInput } from './ChatInput'
+import { ChatInput, type AttachedImage } from './ChatInput'
 import { createSession, getSessions } from '@/lib/db/sessions'
 import { getMessages } from '@/lib/db/messages'
 
@@ -26,6 +26,7 @@ export function ChatApp({ initialSessions, initialSessionId, initialMessages }: 
   const [activeId, setActiveId] = useState<string>(initialSessionId)
   const [input, setInput] = useState('')
   const [isSwitching, setIsSwitching] = useState(false)
+  const [attachedImages, setAttachedImages] = useState<AttachedImage[]>([])
   // 세션 전환 중 race condition 방지: 가장 최근 요청 ID만 반영
   const pendingSessionRef = useRef<string | null>(null)
 
@@ -85,13 +86,29 @@ export function ChatApp({ initialSessions, initialSessionId, initialMessages }: 
     }
   }, [activeId, handleSelectSession, setMessages])
 
-  // 메시지 전송 — sessionId를 body에 포함
+  // 메시지 전송 — 이미지 첨부 시 file 파트 포함
   const handleSubmit = useCallback((e: React.FormEvent) => {
     e.preventDefault()
-    if (!input.trim() || status === 'streaming' || status === 'submitted') return
-    sendMessage({ text: input }, { body: { sessionId: activeId } })
+    const hasContent = input.trim().length > 0 || attachedImages.length > 0
+    if (!hasContent || status === 'streaming' || status === 'submitted') return
+
+    if (attachedImages.length > 0) {
+      const parts: { type: 'file'; mediaType: string; url: string }[] = attachedImages.map((img) => ({
+        type: 'file' as const,
+        mediaType: img.mediaType,
+        url: img.dataUrl,
+      }))
+      sendMessage(
+        { parts: input.trim() ? [...parts, { type: 'text' as const, text: input }] : parts },
+        { body: { sessionId: activeId } }
+      )
+    } else {
+      sendMessage({ text: input }, { body: { sessionId: activeId } })
+    }
+
     setInput('')
-  }, [input, status, sendMessage, activeId])
+    setAttachedImages([])
+  }, [input, attachedImages, status, sendMessage, activeId])
 
   return (
     <div className="flex h-screen overflow-hidden">
@@ -109,6 +126,8 @@ export function ChatApp({ initialSessions, initialSessionId, initialMessages }: 
           onInputChange={setInput}
           onSubmit={handleSubmit}
           status={status}
+          attachedImages={attachedImages}
+          onImagesChange={setAttachedImages}
         />
       </main>
     </div>
