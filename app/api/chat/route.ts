@@ -24,19 +24,19 @@ export async function POST(req: Request) {
 
           const hasImage = (m: UIMessage) => m.parts.some((p) => p.type === 'file')
 
-          const allMessages = [
-            ...messages.map((m) => ({
-              role: m.role,
-              // 이미지 첨부 메시지는 텍스트 앞에 [이미지] 표시
-              content: `${hasImage(m) ? '[이미지] ' : ''}${extractText(m)}`,
-            })),
+          // 신규 메시지 2개(user + assistant)만 append — 전체 재삽입 방지
+          const lastUserMsg = messages[messages.length - 1]
+          await saveMessages(sessionId, [
+            {
+              role: lastUserMsg.role,
+              content: `${hasImage(lastUserMsg) ? '[이미지] ' : ''}${extractText(lastUserMsg)}`,
+            },
             { role: 'assistant', content: text },
-          ]
-          await saveMessages(sessionId, allMessages)
+          ])
 
           if (messages.length === 1) {
-            const firstText = extractText(messages[0])
-            const base = firstText || (hasImage(messages[0]) ? '이미지 첨부' : '새 채팅')
+            const firstText = extractText(lastUserMsg)
+            const base = firstText || (hasImage(lastUserMsg) ? '이미지 첨부' : '새 채팅')
             const title = base.slice(0, 30) + (base.length > 30 ? '...' : '')
             await updateSessionTitle(sessionId, title)
           }
