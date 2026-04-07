@@ -14,7 +14,6 @@ export async function saveMessages(
   messages: { role: string; content: string }[]
 ) {
   await prisma.$transaction([
-    prisma.message.deleteMany({ where: { sessionId } }),
     prisma.message.createMany({
       data: messages.map((m) => ({ ...m, sessionId })),
     }),
