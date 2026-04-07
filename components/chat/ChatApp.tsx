@@ -26,6 +26,8 @@ export function ChatApp({ initialSessions, initialSessionId, initialMessages }: 
   const [activeId, setActiveId] = useState<string>(initialSessionId)
   const [input, setInput] = useState('')
   const [isSwitching, setIsSwitching] = useState(false)
+  // 세션 전환 중 race condition 방지: 가장 최근 요청 ID만 반영
+  const pendingSessionRef = useRef<string | null>(null)
 
   const { messages, sendMessage, setMessages, status } = useChat({
     id: activeId,
@@ -42,11 +44,13 @@ export function ChatApp({ initialSessions, initialSessionId, initialMessages }: 
     prevStatusRef.current = status
   }, [status, messages.length])
 
-  // 세션 전환
+  // 세션 전환 — race condition 방지: fetch 완료 시점에 다른 세션이 선택됐으면 무시
   const handleSelectSession = useCallback(async (id: string) => {
+    pendingSessionRef.current = id
     setActiveId(id)
     setIsSwitching(true)
     const dbMessages = await getMessages(id)
+    if (pendingSessionRef.current !== id) return
     const uiMessages: UIMessage[] = dbMessages.map((m) => ({
       id: m.id,
       role: m.role as 'user' | 'assistant',
